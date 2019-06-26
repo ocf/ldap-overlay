@@ -1,0 +1,10 @@
+*.la
+*.o
+*.lo
+lib
+.libs
+tags
+*.xz
+*.gz
+*.dsc
+openldap*
