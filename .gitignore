@@ -8,3 +8,5 @@ tags
 *.gz
 *.dsc
 openldap*
+dist
+dist_*

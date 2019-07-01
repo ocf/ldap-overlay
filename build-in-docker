@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euxo pipefail
+
+TARGET=$1
+
+mkdir -p /work
+cp -r /mnt/. /work
+cd /work
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get -y install --no-install-recommends libldap2-dev libtool-bin dpkg-dev build-essential devscripts
+apt-get -y -t $TARGET source slapd
+apt-get -y -t $TARGET build-dep slapd
+version="$(apt-cache policy -t $TARGET slapd | grep -Po "(?<=Candidate: ).+" | cut -d'-' -f 1)"
+
+ldap_src="openldap-$version"
+tar xvf "openldap_$version.orig.tar.gz"
+cd "$ldap_src"
+./configure
+make depend
+make
+cd ..
+
+shopt -s nullglob
+
+make LDAP_SRC="$ldap_src" builddeb
+install -o "$DIST_UID" -g "$DIST_GID" -d "/mnt/dist_$1/"
+install -o "$DIST_UID" -g "$DIST_GID" -m 644 ../{*.changes,*.deb,*.dsc,*.tar.*,*.buildinfo} "/mnt/dist_$1/"

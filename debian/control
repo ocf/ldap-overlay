@@ -1,0 +1,11 @@
+Source: ocf-ldap-overlay
+Priority: extra
+Maintainer: OCF Staff <root@ocf.berkeley.edu>
+Standards-Version: 4.3.0
+Section: database
+
+Package: ocf-ldap-overlay
+Priority: extra
+Architecture: all
+Depends: slapd
+Description: OCF virtual attributes ldap overlay
