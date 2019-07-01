@@ -27,7 +27,7 @@ ocfemail.la: ocfemail.lo
 	-rpath $(moduledir) -module -o $@ $? $(LIBS)
 
 clean:
-	rm -rf *.o *.lo *.la .libs debian/*.debhelper debian/*.log dist dist_*
+	rm -rf *.o *.lo *.la .libs debian/*.debhelper debian/*.log dist dist_* venv
 
 install: ocfemail.la
 	mkdir -p $(DESTDIR)$(moduledir)
@@ -37,6 +37,16 @@ install: ocfemail.la
 
 dist:
 	mkdir -p "$@"
+
+.PHONY: test
+test: venv
+	venv/bin/pre-commit install
+	venv/bin/pre-commit run --all-files
+
+venv: Makefile
+	vendor/venv-update \
+		venv= $@ -ppython3 \
+		install= 'pre-commit>=1.0.0'
 
 .PHONY: package_%
 package_%: dist
