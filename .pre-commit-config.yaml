@@ -23,3 +23,7 @@ repos:
         args: [-i, --style=file]
     -   id: clang-tidy
         args: [-checks=*, -warnings-as-errors*]
+-   repo: https://github.com/detailyang/pre-commit-shell.git
+    rev: v1.0.6
+    hooks:
+    -   id: shell-lint
