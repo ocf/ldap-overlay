@@ -4,9 +4,11 @@
 lib
 .libs
 tags
+tags.lock
 *.xz
 *.gz
 *.dsc
 openldap*
 dist
 dist_*
+venv

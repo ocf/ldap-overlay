@@ -1,0 +1,5 @@
+---
+BasedOnStyle: Google
+IndentWidth: 4
+SortIncludes: false # ldap bug: slap.h must be before config.h
+---
