@@ -9,7 +9,7 @@ DEFS =
 INCS = $(LDAP_INC)
 LIBS = $(LDAP_LIB)
 
-PROGRAMS = ocfemail.la
+PROGRAMS = ocfvirt.la
 LTVER = 0:0:0
 
 prefix=/usr
@@ -17,19 +17,19 @@ moduledir = $(prefix)/lib/ldap
 
 .SUFFIXES: .c .o .lo
 
-.c.lo: ocfemail.c
+.c.lo: ocfvirt.c
 	$(LIBTOOL) --mode=compile $(CC) $(OPT) $(DEFS) $(INCS) -c $<
 
 all: $(PROGRAMS)
 
-ocfemail.la: ocfemail.lo
+ocfvirt.la: ocfvirt.lo
 	$(LIBTOOL) --mode=link $(CC) $(OPT) -version-info $(LTVER) \
 	-rpath $(moduledir) -module -o $@ $? $(LIBS)
 
 clean:
 	rm -rf *.o *.lo *.la .libs debian/*.debhelper debian/*.log dist dist_* venv
 
-install: ocfemail.la
+install: ocfvirt.la
 	mkdir -p $(DESTDIR)$(moduledir)
 	for p in $(PROGRAMS) ; do \
 		$(LIBTOOL) --mode=install cp $$p $(DESTDIR)$(moduledir) ; \

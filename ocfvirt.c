@@ -1,7 +1,8 @@
 /**
- * This overlay adds virtual attribute "ocfEmail" with person's
- * uid@ocf.berkeley.edu into
- * response entry.
+ * This overlay adds OCF specific virtual attributes.
+ *
+ * Virtual Attribute list:
+ *     ocfMail: uid@ocf.berkeley.edu into
  */
 #include "portable.h"
 
@@ -23,7 +24,7 @@ static const char *SOURCE_ATTRS = "uid";
 static AttributeDescription *uid_ad;
 static AttributeDescription *ocfemail_ad;
 
-static slap_overinst ocfemail;
+static slap_overinst ocfvirt;
 
 static struct berval *read_attr(Entry *entry, AttributeDescription *attr_desc) {
     const Attribute *attr = attr_find(entry->e_attrs, attr_desc);
@@ -40,7 +41,7 @@ static struct berval *read_attr(Entry *entry, AttributeDescription *attr_desc) {
  * remove extra attributes after processing by this overlay, which is not
  * very nice, but whatever...
  */
-static int ocfemail_search(Operation *op, SlapReply *rs) {
+static int ocfvirt_search(Operation *op, SlapReply *rs) {
     // Is this our own internal search? Ignore it.
     if (op->o_no_schema_check) {
         return SLAP_CB_CONTINUE;
@@ -61,7 +62,7 @@ static int ocfemail_search(Operation *op, SlapReply *rs) {
  * Add virtual attribute ATTR_OCFEMAIL to the search response.
  * This function is invoked on every return from LDAP to the client.
  */
-static int ocfemail_response(Operation *op, SlapReply *rs) {
+static int ocfvirt_response(Operation *op, SlapReply *rs) {
     const char *email_suffix = "@ocf.berkeley.edu";
     int email_suffix_len = strlen(email_suffix);
 
@@ -113,16 +114,16 @@ static int ocfemail_response(Operation *op, SlapReply *rs) {
     return SLAP_CB_CONTINUE;
 }
 
-static int ocfemail_db_destroy(BackendDB *be, ConfigReply *cr) {
+static int ocfvirt_db_destroy(BackendDB *be, ConfigReply *cr) {
     return LDAP_SUCCESS;
 }
 
-static int ocfemail_db_init(BackendDB *be, ConfigReply *cr) {
+static int ocfvirt_db_init(BackendDB *be, ConfigReply *cr) {
     const char *err_msg;
 
     if (slap_str2ad(ATTR_UID, &uid_ad, &err_msg) != LDAP_SUCCESS) {
-        Debug(LDAP_DEBUG_ANY, "ocfEmail: attribute '%s': %s.\n", ATTR_UID,
-              err_msg, 0);
+        Debug(LDAP_DEBUG_ANY, "uid: attribute '%s': %s.\n", ATTR_UID, err_msg,
+              0);
         return -1;
     }
     if (slap_str2ad(ATTR_OCFEMAIL, &ocfemail_ad, &err_msg) != LDAP_SUCCESS) {
@@ -138,15 +139,15 @@ static int ocfemail_db_init(BackendDB *be, ConfigReply *cr) {
  * providing dynamic modules functionality.
  *
  */
-int ocfemail_initialize() {
+int ocfvirt_initialize() {
     // Register name and callbacks.
-    ocfemail.on_bi.bi_type = "ocfemail";
-    ocfemail.on_bi.bi_db_init = ocfemail_db_init;
-    ocfemail.on_bi.bi_db_destroy = ocfemail_db_destroy;
-    ocfemail.on_bi.bi_op_search = ocfemail_search;
-    ocfemail.on_response = ocfemail_response;
+    ocfvirt.on_bi.bi_type = "ocfvirt";
+    ocfvirt.on_bi.bi_db_init = ocfvirt_db_init;
+    ocfvirt.on_bi.bi_db_destroy = ocfvirt_db_destroy;
+    ocfvirt.on_bi.bi_op_search = ocfvirt_search;
+    ocfvirt.on_response = ocfvirt_response;
 
-    return overlay_register(&ocfemail);
+    return overlay_register(&ocfvirt);
 }
 
-int init_module(int argc, char *argv[]) { return ocfemail_initialize(); }
+int init_module(int argc, char *argv[]) { return ocfvirt_initialize(); }
