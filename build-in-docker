@@ -15,15 +15,15 @@ apt-get -y -t $TARGET build-dep slapd
 version="$(apt-cache policy -t $TARGET slapd | grep -Po "(?<=Candidate: ).+" | cut -d'-' -f 1)"
 
 ldap_src="openldap-$version"
-tar xvf "openldap_$version.orig.tar.gz"
-cd "$ldap_src"
-./configure
-make depend
-make
-cd ..
+(
+    tar xvf "openldap_$version.orig.tar.gz"
+    cd "$ldap_src"
+    ./configure
+    make depend
+    make
+)
 
 shopt -s nullglob
-
 make LDAP_SRC="$ldap_src" builddeb
 install -o "$DIST_UID" -g "$DIST_GID" -d "/mnt/dist_$1/"
 install -o "$DIST_UID" -g "$DIST_GID" -m 644 ../{*.changes,*.deb,*.dsc,*.tar.*,*.buildinfo} "/mnt/dist_$1/"
