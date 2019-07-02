@@ -9,7 +9,7 @@ cd /work
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
-apt-get -y install --no-install-recommends git python python3 virtualenv clang-format clang-tidy libldap2-dev libtool-bin dpkg-dev build-essential devscripts
+apt-get -y install --no-install-recommends git python python3 virtualenv clang-format clang-tidy libldap2-dev libtool-bin dpkg-dev build-essential devscripts shellcheck
 apt-get -y -t "$TARGET" source slapd
 apt-get -y -t "$TARGET" build-dep slapd
 version="$(apt-cache policy -t "$TARGET" slapd | grep -Po "(?<=Candidate: ).+" | cut -d'-' -f 1)"
