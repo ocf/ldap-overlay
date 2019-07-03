@@ -15,7 +15,7 @@
 #include "config.h"
 
 // Name of "virtual" attribute.
-static const char *ATTR_OCFEMAIL = "ocfEmailVirt";  // TODO: change in prod
+static const char *ATTR_OCFEMAIL = "ocfEmail";
 
 // Names of source attributes.
 static const char *ATTR_UID = "uid";
