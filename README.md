@@ -1,4 +1,5 @@
 ## ocf-ldap-overlay
+[![Build Status](https://jenkins.ocf.berkeley.edu/buildStatus/icon?job=ldap-overlay/master)](https://jenkins.ocf.berkeley.edu/job/ldap-overlay/)
 
 ### Building
 
