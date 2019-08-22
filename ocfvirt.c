@@ -110,7 +110,7 @@ static int ocfvirt_response(Operation *op, SlapReply *rs) {
     (void)attr_delete(&entry->e_attrs, ocfemail_ad);
     (void)attr_merge_normalize_one(entry, ocfemail_ad, &ocfemail_bv,
                                    op->o_tmpmemctx);
-
+    ch_free(ocfemail_virt);
     return SLAP_CB_CONTINUE;
 }
 
