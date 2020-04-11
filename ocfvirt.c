@@ -14,6 +14,11 @@
 #include "slap.h"
 #include "config.h"
 
+// https://github.com/ocf/ocflib/blob/555dd97e22858396a311ef2addfe8ff747128b16/ocflib/account/validators.py#L337
+#define USERNAME_MAX 16
+#define OCF_MAIL_SUFFIX "@ocf.berkeley.edu"
+#define OCF_MAIL_LEN sizeof(OCF_MAIL_SUFFIX) - 1
+
 // Name of "virtual" attribute.
 static const char *ATTR_OCFEMAIL = "ocfEmail";
 
@@ -63,8 +68,7 @@ static int ocfvirt_search(Operation *op, SlapReply *rs) {
  * This function is invoked on every return from LDAP to the client.
  */
 static int ocfvirt_response(Operation *op, SlapReply *rs) {
-    const char *email_suffix = "@ocf.berkeley.edu";
-    int email_suffix_len = strlen(email_suffix);
+    char ocfemail_virt[OCF_MAIL_LEN + USERNAME_MAX + 1];
 
     // Do nothing if we are connected as admin; admin "view"
     // is not altered in any way.
@@ -93,24 +97,27 @@ static int ocfvirt_response(Operation *op, SlapReply *rs) {
     if (!uid_bv) {
         return SLAP_CB_CONTINUE;
     }
-    const int ocfemail_len = email_suffix_len + (uid_bv ? uid_bv->bv_len : 0);
 
-    char *ocfemail_virt = ch_malloc(ocfemail_len + 1);
-    ocfemail_virt[0] = '\0';
-
-    if (uid_bv) {
-        strncat(ocfemail_virt, uid_bv->bv_val, uid_bv->bv_len);
+    // uid_bv->bv_val may or may not be NULL terminated, and lber-types(3) not
+    // clear whether bv_len includes the NULL terminator. Let's just be extra
+    // safe and also handle the case where it does.
+    if (uid_bv->bv_len > USERNAME_MAX &&
+        !(uid_bv->bv_len == USERNAME_MAX + 1 &&
+          uid_bv->bv_val[USERNAME_MAX] == '\0')) {
+        return SLAP_CB_CONTINUE;
     }
-    strncat(ocfemail_virt, email_suffix, email_suffix_len);
 
     struct berval ocfemail_bv;
-    (void)ber_str2bv(ocfemail_virt, ocfemail_len, 0, &ocfemail_bv);
+    *ocfemail_virt = '\0';
+    strncat(ocfemail_virt, uid_bv->bv_val, uid_bv->bv_len);
+    strcat(ocfemail_virt, OCF_MAIL_SUFFIX);
+    (void)ber_str2bv(ocfemail_virt, uid_bv->bv_len + OCF_MAIL_LEN, 0,
+                     &ocfemail_bv);
 
     // Add/replace attribute ATTR_OCFEMAIL in the entry.
     (void)attr_delete(&entry->e_attrs, ocfemail_ad);
     (void)attr_merge_normalize_one(entry, ocfemail_ad, &ocfemail_bv,
                                    op->o_tmpmemctx);
-    ch_free(ocfemail_virt);
     return SLAP_CB_CONTINUE;
 }
 
