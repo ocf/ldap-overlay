@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 
-#include <ac/assert.h>
 #include <ac/string.h>
 #include <ac/socket.h>
 
@@ -99,11 +98,19 @@ static int ocfvirt_response(Operation *op, SlapReply *rs) {
         return SLAP_CB_CONTINUE;
     }
 
-    assert(uid_bv->bv_len <= USERNAME_MAX);
+    // uid_bv->bv_val may or may not be NULL terminated, and lber-types(3) not
+    // clear whether bv_len includes the NULL terminator. Let's just be extra
+    // safe and also handle the case where it does.
+    if (uid_bv->bv_len > USERNAME_MAX &&
+        !(uid_bv->bv_len == USERNAME_MAX + 1 &&
+          uid_bv->bv_val[USERNAME_MAX] == '\0')) {
+        return SLAP_CB_CONTINUE;
+    }
 
     struct berval ocfemail_bv;
-    strncpy(ocfemail_virt, uid_bv->bv_val, USERNAME_MAX + 1);
-    strncat(ocfemail_virt, OCF_MAIL_SUFFIX, OCF_MAIL_LEN);
+    *ocfemail_virt = '\0';
+    strncat(ocfemail_virt, uid_bv->bv_val, uid_bv->bv_len);
+    strcat(ocfemail_virt, OCF_MAIL_SUFFIX);
     (void)ber_str2bv(ocfemail_virt, uid_bv->bv_len + OCF_MAIL_LEN, 0,
                      &ocfemail_bv);
 
